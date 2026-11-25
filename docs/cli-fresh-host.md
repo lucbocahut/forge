@@ -7,7 +7,8 @@ GitHub-confirmed merge allows the final repository handover.
 
 ## Prerequisites
 
-- A dedicated x86-64 Ubuntu 24.04 VM with AppArmor, systemd and `/usr/bin/python3`.
+- A dedicated x86-64 or ARM64 Ubuntu 24.04 VM with AppArmor, systemd and
+  `/usr/bin/python3`. See [Apple Silicon (ARM64) VM](#apple-silicon-arm64-vm).
 - SSH access from your computer as root or an account with noninteractive sudo.
   Configure its SSH key through your VM provider. Forge handles remote commands
   and file transfers through the CLI.
@@ -18,6 +19,24 @@ GitHub-confirmed merge allows the final repository handover.
 - Authority to register a GitHub App under the chosen owner and administer the
   selected repositories. GitHub Pro is not required. Forge respects existing
   repository rules and reports any merge blockers.
+
+### Apple Silicon (ARM64) VM
+
+A Mac with Apple Silicon can host Forge in a Linux VM:
+
+- Use [UTM](https://mac.getutm.app/) or [Lima](https://lima-vm.io/) with Apple
+  Virtualization (not QEMU emulation). Install Ubuntu 24.04 Server for arm64.
+- On a 64 GB M1, give the VM 10 vCPUs, 40–48 GB of memory and a 250 GB disk.
+- To keep the Mac running with the lid closed, run
+  `sudo pmset -a disablesleep 1` and `sudo pmset -a autorestart 1`. Start the
+  VM at login (a UTM or Lima login item) so it returns after a power cut.
+- Install Tailscale inside the VM, not only on the Mac, and join it with a tag,
+  for example `sudo tailscale up --advertise-tags=tag:forge`. The tag must be
+  listed under `tagOwners` in your tailnet policy.
+
+Prepared releases are amd64-only, so ARM64 hosts build the operator UI and worker
+images on the host. The first install and each update take longer.
+Claude Code, Codex and Grok all have native ARM64 builds.
 
 ## Install the CLI and start
 

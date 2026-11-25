@@ -11,7 +11,8 @@ server, workers, web app and CLI.
 
 You need:
 
-- An x86-64 Ubuntu 24.04 server with SSH access and administrator privileges.
+- An x86-64 or ARM64 Ubuntu 24.04 server with SSH access and administrator
+  privileges.
 - A Tailscale account for private access to the factory.
 - Permission to create a GitHub App and install it on your repositories.
 - A supported coding account, such as Codex or Claude Code.
@@ -19,7 +20,7 @@ You need:
   [uv](https://docs.astral.sh/uv/getting-started/installation/).
 
 Your server and coding provider may have costs. GitHub Pro is not required.
-Mac hosting is not supported by this installer yet.
+macOS is not a supported host; on Apple Silicon, run Forge in an ARM64 Ubuntu VM.
 
 Install the CLI on your computer, then start setup:
 

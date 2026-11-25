@@ -258,12 +258,13 @@ class HostArchitectureTests(unittest.TestCase):
             context = patch('forge_client._install_host.' + target, **options)
             context.start(); self.addCleanup(context.stop)
 
-    def test_x86_64_ubuntu_facts_match_supported_contract(self):
-        with patch.object(remote.platform, 'machine', return_value='x86_64'):
-            self.assertEqual(remote.facts(), FACTS)
+    def test_x86_64_and_arm64_ubuntu_facts_match_supported_contract(self):
+        for architecture in ('x86_64', 'aarch64', 'arm64'):
+            with self.subTest(architecture=architecture), patch.object(remote.platform, 'machine', return_value=architecture):
+                self.assertEqual(remote.facts(), FACTS)
 
-    def test_arm64_is_refused_before_planning_or_host_mutations(self):
-        for architecture in ('aarch64', 'arm64', 'i686'):
+    def test_other_architectures_are_refused_before_planning_or_host_mutations(self):
+        for architecture in ('i686', 'armv7l', 'riscv64'):
             for action in ('plan', 'apply', 'resume'):
                 with self.subTest(architecture=architecture, action=action), \
                      patch.object(remote.platform, 'machine', return_value=architecture), \
@@ -282,8 +283,7 @@ class HostArchitectureTests(unittest.TestCase):
         with self.assertRaises(SetupError) as caught:
             host.rpc('payload', {})
         self.assertEqual(caught.exception.code, 'unsupported_architecture')
-        self.assertIn('x86-64 (amd64) Ubuntu 24.04', str(caught.exception))
-        self.assertIn('ARM64 servers are not supported', str(caught.exception))
+        self.assertIn('x86-64 (amd64) or ARM64 (aarch64) Ubuntu 24.04', str(caught.exception))
 
 
 class RemoteInstallerTests(unittest.TestCase):

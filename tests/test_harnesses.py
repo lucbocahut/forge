@@ -1,6 +1,7 @@
 import hashlib
 import io
 import json
+import shutil
 import subprocess
 import threading
 import time
@@ -181,13 +182,29 @@ class HarnessTests(unittest.TestCase):
     def test_binary_harness_manifest_is_pinned_and_verifiable(self):
         item = manifests()['grok']
         self.assertEqual(item['distribution'], 'binary')
-        self.assertRegex(item['url'], r'^https://x\.ai/cli/grok-' + item['version'].replace('.', r'\.') + r'-linux-x86_64$')
-        self.assertRegex(item['sha256'], r'^[a-f0-9]{64}$')
+        self.assertEqual(set(item['binaries']), {'x86_64', 'aarch64'})
+        for arch, binary in item['binaries'].items():
+            self.assertRegex(binary['url'], r'^https://x\.ai/cli/grok-' + item['version'].replace('.', r'\.') + '-linux-' + arch + '$')
+            self.assertRegex(binary['sha256'], r'^[a-f0-9]{64}$')
         self.assertEqual(item['auth_file'], '.grok/auth.json')
         self.assertEqual(item['login'], ['login', '--device-auth'])
         self.assertEqual(set(item['managed_files'].values()), {'/etc/grok/requirements.toml', '/etc/grok/managed_config.toml'})
         for name in item['managed_files']:
             self.assertTrue((Path('forge/harnesses/grok') / name).is_file(), name)
+
+    @unittest.skipUnless(shutil.which('node'), 'The build installer requires Node.js')
+    def test_binary_harness_selects_the_build_architecture(self):
+        script = (
+            "const {validate, binary} = require('./forge/harnesses/install.cjs');"
+            "const m = JSON.parse(require('fs').readFileSync('forge/harnesses/grok/manifest.json', 'utf8'));"
+            "validate(m);"
+            "const only = {...m, binaries: {x86_64: m.binaries.x86_64}};"
+            "let missing; try { binary(only, 'arm64'); } catch (error) { missing = error.message; }"
+            "console.log(JSON.stringify({x64: binary(m, 'x64').url, arm64: binary(m, 'arm64').url, missing}));")
+        result = json.loads(subprocess.run(['node', '-e', script], capture_output=True, text=True, timeout=10, check=True).stdout)
+        self.assertTrue(result['x64'].endswith('-linux-x86_64'))
+        self.assertTrue(result['arm64'].endswith('-linux-aarch64'))
+        self.assertEqual(result['missing'], 'Grok Build 1.0.34 has no aarch64 Linux build; it is unavailable on this host.')
 
     def test_setup_probe_failure_messages_name_the_cause(self):
         from forge.setup_service import probe_failure_message

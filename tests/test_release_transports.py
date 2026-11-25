@@ -67,6 +67,24 @@ class ReleaseTransportTests(unittest.TestCase):
                 for path in state.iterdir():
                     if path.is_file(): self.assertNotIn(b'secret=ephemeral', path.read_bytes())
 
+    def test_arm64_host_builds_from_source_without_staging_prepared_assets(self):
+        with tempfile.TemporaryDirectory() as directory:
+            state = Path(directory).resolve() / 'state'
+            request = dict(version=1, action='apply', intent=INTENT, source=PACK,
+                           upgrade_installer=False, release_access=deepcopy(ACCESS))
+            def private(path, create=False):
+                if create: path.mkdir(mode=0o700, exist_ok=True)
+            with patch.object(remote, 'STATE', state), patch.object(remote, 'facts', return_value=FACTS), \
+                    patch.object(remote, 'check_new_host'), patch.object(remote, 'running', return_value=False), \
+                    patch.object(remote, 'private_directory', side_effect=private), patch.object(remote, 'run'), \
+                    patch.dict(sys.modules, {'forge_release_helpers': release_artifacts}), \
+                    patch.object(release_artifacts.platform, 'system', return_value='Linux'), \
+                    patch.object(release_artifacts.platform, 'machine', return_value='aarch64'), \
+                    patch.object(release_artifacts, 'stage') as stage:
+                remote.dispatch(request, 'worker code')
+                stage.assert_not_called()
+                self.assertFalse((state / 'prepared').exists())
+
     def test_fresh_revision_mismatch_rejected_before_any_stage(self):
         request = dict(version=1, action='apply', intent=INTENT, source=PACK,
                        upgrade_installer=False, release_access={**ACCESS, 'revision': 'b'*40})

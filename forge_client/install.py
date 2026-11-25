@@ -42,7 +42,7 @@ ERRORS = {
     'account_handoff_unconfirmed': 'A different login is now connected. Inspect it before replacing provider credentials.',
     'administrator_required': 'Use root or an SSH account with noninteractive sudo for this VM.',
     'unsupported_os': 'Fresh installation currently supports Ubuntu 24.04. Select a supported VM.',
-    'unsupported_architecture': 'Fresh installation requires an x86-64 (amd64) Ubuntu 24.04 server. ARM64 servers are not supported; select an x86-64 VM.',
+    'unsupported_architecture': 'Fresh installation requires an x86-64 (amd64) or ARM64 (aarch64) Ubuntu 24.04 server. Select a supported VM.',
     'apparmor_required': 'Use a VM with AppArmor enabled in its kernel.',
     'systemd_required': 'Use a VM running systemd.',
     'existing_installation': 'This host already has a forge account or installation. Use the existing-server commands or select a fresh VM.',

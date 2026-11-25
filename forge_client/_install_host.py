@@ -70,7 +70,7 @@ def facts():
     need(sys.platform == 'linux' and os.geteuid() == 0, 'administrator_required')
     release = dict(line.split('=', 1) for line in Path('/etc/os-release').read_text().splitlines() if '=' in line)
     need(release.get('ID', '').strip('"') == 'ubuntu' and release.get('VERSION_ID', '').strip('"') == '24.04', 'unsupported_os')
-    need(platform.machine() == 'x86_64', 'unsupported_architecture')
+    need(platform.machine() in ('x86_64', 'aarch64', 'arm64'), 'unsupported_architecture')
     enabled = Path('/sys/module/apparmor/parameters/enabled')
     need(enabled.exists() and enabled.read_text().strip() == 'Y', 'apparmor_required')
     need(Path('/run/systemd/system').is_dir(), 'systemd_required')
@@ -217,9 +217,11 @@ def dispatch(request, payload):
         need(data['payload'] == payload_digest or request['upgrade_installer'], 'installer_changed')
         with locked('work'):
             if release_access is not None:
-                from forge_release_helpers import stage, ArtifactError
+                from forge_release_helpers import stage, source_build, ArtifactError
                 try:
-                    stage(release_access, cache_root=STATE / 'prepared')
+                    # ARM64 hosts build from source; prepared assets are amd64-only.
+                    if not source_build():
+                        stage(release_access, cache_root=STATE / 'prepared')
                 except ArtifactError:
                     raise InstallError('prepared_release_unavailable') from None
             if not source_present(data):

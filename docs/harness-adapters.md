@@ -16,10 +16,12 @@ Each module contains:
   and cannot be weakened by repository configuration.
 
 The build installer supports two pinned distributions: an npm package at an exact
-version (`package`, `binary`), or a single Linux binary (`distribution: "binary"`,
-`url`, `sha256`) downloaded at build time from `https://x.ai/cli/` and verified
-against its manifest checksum before it is placed in the image. Never run an
-unpinned remote installer in a worker.
+version (`package`, `binary`), or a Linux binary per architecture
+(`distribution: "binary"`, `binaries.x86_64` and `binaries.aarch64`, each with
+`url` and `sha256`) downloaded at build time from `https://x.ai/cli/` and verified
+against its manifest checksum before it is placed in the image. A build on an
+architecture the manifest does not list fails with a message naming the harness.
+Never run an unpinned remote installer in a worker.
 
 `run` receives a supervisor-owned assignment, the prepared checkout, and only that
 execution's credential environment. It invokes the harness with native isolation,

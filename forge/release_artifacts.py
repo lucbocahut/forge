@@ -35,10 +35,11 @@ class ArtifactError(ValueError):
 
 
 def source_build():
+    """Prepared assets are amd64-only, so ARM64 Linux hosts always build on the host."""
     value = os.environ.get('FORGE_BUILD_FROM_SOURCE', '')
     if value not in ('', '0', '1'):
         raise ArtifactError('FORGE_BUILD_FROM_SOURCE must be 0 or 1.')
-    return value == '1'
+    return value == '1' or (platform.system() == 'Linux' and platform.machine() in ('aarch64', 'arm64'))
 
 
 def require(value, message):

@@ -60,6 +60,19 @@ class ManifestTests(unittest.TestCase):
         with patch.dict('os.environ', {'FORGE_BUILD_FROM_SOURCE': 'yes'}):
             with self.assertRaises(artifacts.ArtifactError): artifacts.source_build()
 
+    def test_arm64_linux_always_builds_from_source(self):
+        for system, machine, expected in [('Linux', 'aarch64', True), ('Linux', 'arm64', True),
+                                          ('Linux', 'x86_64', False), ('Darwin', 'arm64', False)]:
+            with self.subTest(system=system, machine=machine), patch.dict('os.environ', {'FORGE_BUILD_FROM_SOURCE': ''}), \
+                    patch.object(artifacts.platform, 'system', return_value=system), \
+                    patch.object(artifacts.platform, 'machine', return_value=machine), \
+                    patch.object(artifacts, 'prepared') as prepared, \
+                    patch.object(host_update, 'artifact_inputs', return_value=INPUTS), \
+                    patch.object(host_update, 'source_revision', return_value=REVISION):
+                self.assertEqual(artifacts.source_build(), expected)
+                self.assertEqual(host_update.prepared_release() is None, expected)
+                self.assertEqual(prepared.called, not expected)
+
     def test_missing_manifest_does_not_build_from_source(self):
         with patch.object(artifacts.urllib.request, 'urlopen', side_effect=artifacts.urllib.error.URLError('release not published')):
             with self.assertRaisesRegex(artifacts.ArtifactError, 'Wait for its Prepared release workflow'):

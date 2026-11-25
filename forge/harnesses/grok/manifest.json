@@ -4,8 +4,16 @@
   "name": "Grok Build",
   "version": "1.0.34",
   "distribution": "binary",
-  "url": "https://x.ai/cli/grok-1.0.34-linux-x86_64",
-  "sha256": "be5905e107d2b8b5f3c142d21ecfe4c8fd32a913d2fd551b788707930c4dc80d",
+  "binaries": {
+    "x86_64": {
+      "url": "https://x.ai/cli/grok-1.0.34-linux-x86_64",
+      "sha256": "be5905e107d2b8b5f3c142d21ecfe4c8fd32a913d2fd551b788707930c4dc80d"
+    },
+    "aarch64": {
+      "url": "https://x.ai/cli/grok-1.0.34-linux-aarch64",
+      "sha256": "39ab87666877d64ef3a40aa60fbe0c3b6a6acd7001b78fe60e2c76bb6cfc4a94"
+    }
+  },
   "command": "grok",
   "login": [
     "login",

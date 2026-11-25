@@ -34,8 +34,8 @@ with tempfile.TemporaryDirectory(prefix="forge-migration-tool-") as directory:
  try:
   if release_access is not None:
    if request.get("apply") is not True or not isinstance(release_access,dict) or release_access.get("revision")!=request.get("source_revision"): raise MigrationError("invalid_release_access")
-   from forge.release_artifacts import stage,ArtifactError
-   try: stage(release_access)
+   from forge.release_artifacts import stage,source_build,ArtifactError
+   try: source_build() or stage(release_access)
    except ArtifactError: raise MigrationError("prepared_release_unavailable") from None
    release_access=None
   prepared=None

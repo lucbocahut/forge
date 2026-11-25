@@ -120,7 +120,7 @@ it cannot fetch private releases using your personal credentials.
 Maintainers can deliberately build all assets from a source checkout by setting
 `FORGE_BUILD_FROM_SOURCE=1` for the host-side setup/update command. This remains
 an explicit development choice, not a fallback for missing release assets.
-Other platforms currently require this path.
+ARM64 Linux hosts take this path automatically, because prepared releases are amd64-only.
 
 To prepare release files on a clean Linux amd64 checkout with Docker, sudo and
 AppArmor available:
