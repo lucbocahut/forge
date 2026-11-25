@@ -29,7 +29,7 @@ any kind in jobs”: provider authentication depends on the selected account mod
 
 | Boundary | Enforcement and limits |
 | --- | --- |
-| Operator → web app | Configured instances require an authorized operator session for operational reads and mutations. Identity comes from GitHub or a linked Tailscale user through the trusted Serve/UI proxy. HTTPS, host validation, session expiry and action tokens protect browser actions. The factory name is public sign-in metadata. |
+| Operator → web app | Operational reads and browser mutations require an authorized operator session, so operator sign-in must be configured first. Identity comes from GitHub or a linked Tailscale user through the trusted Serve/UI proxy. HTTPS, host validation, session expiry and action tokens protect browser actions. The factory name is public sign-in metadata. |
 | UI → Python API | Loopback API, private upstream secret, restricted forwarded headers and routes. App keys and provider credentials are not mounted into the UI. The host service account can cross this boundary. |
 | External agent → Forge | Explicit operator approval, repository/capability scope, expiring credentials and revocation. Personal GitHub administration credentials stay in the agent's local CLI. These grants do not give direct host or worker control. |
 | Installation CLI → host | Explicit administrative SSH destination, verified host identity and saved installation intent. App credentials are transferred privately; personal GitHub administration tokens remain local. This authority is broader than an external agent connection. |
@@ -41,15 +41,12 @@ any kind in jobs”: provider authentication depends on the selected account mod
 | Controller → GitHub merge | The supervisor requires current Review/Audit evidence and applicable operator approval before its own merges. It observes existing GitHub protections and checks the expected head. Forge does not create a mandatory GitHub ruleset or govern merges performed outside Forge. GitHub App grants remain broader than an individual issue or branch. |
 
 Older configurations may retain separate role Apps or a separate sign-in App.
-Those compatibility paths do not change the job credential boundary. Before
-operator authentication is configured, legacy deployments may still allow
-private-network reads; browser mutations require a signed-in operator. Complete
-sign-in setup before granting other users network access.
+Those compatibility paths do not change the job credential boundary.
 
 Relevant implementation: [worker boundary](forge/factory/worker_boundary.py),
 [runner](forge/factory/runner.py), [mirror policy](forge/mirror/policy.py),
 [publisher](forge/factory/publisher.py), [provider mode selection](forge/provider_runtime.py),
-[UI proxy](ui/server/utils/proxy.ts), [API admission](legacy/forge-status.py)
+[UI proxy](ui/server/utils/proxy.ts), [API admission](forge/status_api.py)
 and [operator identity](docs/operator-sign-in.md).
 
 ## Isolation status

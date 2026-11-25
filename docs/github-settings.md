@@ -34,9 +34,9 @@ large or inconsistent paginated responses fail rather than becoming empty lists.
 The settings UI is the operator UI's `/settings` page. Host setup installs the
 UI and the loopback status API it reads, with `FORGE_ROOT` set to the private
 runtime root and its selected SQLite store; see [UI deployment](ui-deployment.md). Keep
-the UI on a trusted private network. Mutating requests require configured
-[operator sign-in](operator-sign-in.md), a signed-in operator, same-origin JSON and
-that session's CSRF token; without sign-in the API offers no control.
+the UI on a trusted private network. Settings reads and mutations require an
+[operator session](operator-sign-in.md). Mutations also require same-origin JSON
+and the session's CSRF token.
 
 ## Create and install the Forge App
 

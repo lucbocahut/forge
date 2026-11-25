@@ -45,13 +45,12 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
   if (payload.phase === 'resetting') return onboarding()
 
-  // Contracts §2 and legacy/forge-status.py — `/` belongs to the started
-  // factory, so every phase short of `active` is sent back to guided setup.
+  // `/` belongs to the started factory, so every phase short of `active`
+  // is sent back to guided setup.
   if (to.path === '/' && payload.phase !== 'active') return onboarding()
 
-  // forge-status.py:681 keys the /settings 303 on `state/factory-v2.enabled`,
-  // which GET /api/factory reports as `active` — not on the setup phase. A
-  // factory can already be running while a *new* guided setup is under way,
+  // The /settings redirect uses the `active` flag from GET /api/factory.
+  // A factory can already be running while a *new* guided setup is under way,
   // and Settings then renders with its capacity form locked ("Use guided
   // setup until the factory has started"). Only that case needs the second
   // read, so an activated setup never pays for it.

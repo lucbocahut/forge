@@ -85,12 +85,10 @@ class SettingsHTTPTests(unittest.TestCase):
 
     def test_status_api_refuses_network_and_unset_binds(self):
         import os, subprocess, sys
-        script=os.path.join(os.path.dirname(__file__),'..','legacy','forge-status.py')
         with tempfile.TemporaryDirectory() as directory:
             for bind,message in (('', 'Set FORGE_BIND_ADDRESS=127.0.0.1'), ('100.64.0.7', 'binds loopback only')):
-                env={**os.environ,'FORGE_ROOT':directory,'FORGE_BIND_ADDRESS':bind,'FORGE_PORT':'1',
-                     'PYTHONPATH':os.path.join(os.path.dirname(__file__),'..')}
-                result=subprocess.run([sys.executable,script],env=env,capture_output=True,text=True,timeout=30)
+                env={**os.environ,'FORGE_ROOT':directory,'FORGE_BIND_ADDRESS':bind,'FORGE_PORT':'1'}
+                result=subprocess.run([sys.executable,'-m','forge.status_api'],env=env,capture_output=True,text=True,timeout=30)
                 self.assertNotEqual(result.returncode,0)
                 self.assertIn(message,result.stderr)
 
