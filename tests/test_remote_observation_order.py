@@ -26,11 +26,27 @@ class DiscoveryTimestampTests(RuntimeFixture):
         self.github.recent_authors.return_value = []
         self.github.target.return_value = 'main'
         self.github.protections.return_value = True
+        self.github.ready_approves.return_value = True
         self.config = validate({'enabled': True, 'image': 'sha256:' + 'a' * 64})
         self.discovery = DiscoveryController(self.database, self.settings, self.github, config=self.config, clock=lambda: self.now)
         self.remote = dict(number=1, title='Ready issue', body='Full body', state='open',
                            updated_at='2026-10-03T16:02:51Z', labels=['ready'], assignees=[])
         self.repo = {'id': 10, 'name': 'example/project', 'enabled': True}
+
+    def test_edited_ready_issue_waits_for_reapproval_even_on_first_seen_revision(self):
+        edited = {**self.remote, 'body': 'Edited requirement', 'updated_at': '2026-10-03T16:03:00Z'}
+        self.discovery.inventory.record(self.repo, edited)
+        self.github.issue.return_value = edited, {'complete': True}
+        self.github.ready_approves.return_value = False
+
+        self.assertEqual(self.discovery.cycle()['items'], [{'issue_id': '10:1', 'pending': 'ready_reapproval'}])
+        self.assertEqual(self.discovery.cycle()['items'], [{'issue_id': '10:1', 'pending': 'ready_reapproval'}])
+        self.github.target.assert_not_called()
+        with self.database.read_snapshot() as db:
+            self.assertEqual(db.execute('SELECT COUNT(*) FROM units').fetchone()[0], 0)
+
+        self.github.ready_approves.return_value = True
+        self.assertIn('unit_id', self.discovery.cycle()['items'][0])
 
     def test_import_shaped_raw_timestamp_is_refreshed_and_admitted_without_remote_edit(self):
         self.discovery.inventory.record(self.repo, self.remote, {'legacy_body_hash': 'old', 'complete': False})

@@ -25,6 +25,9 @@ class GitHub(DeliveryGitHub):
         self.remote['labels'] = ['ready']
         self.deadline = float('inf')
 
+    def ready_approves(self, item, issue, ready_label):
+        return ready_label in issue['labels']
+
     def protection_report(self, item, candidate):
         return dict(repo_id=item['repo_id'], branch=candidate['base_ref'], available=True, observed_at=100.0,
                     requirements=[{'id': 'reviews', 'passed': True}, {'id': 'stale', 'passed': True}],

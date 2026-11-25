@@ -21,6 +21,12 @@ flowchart TD
 
 Intake checks readiness; it is not a separate AI triage worker. An issue must be ready in an enabled repository, with no blocking requirement, before it can take a worker slot.
 
+Forge verifies that a GitHub user applied the ready label after the last edit to an
+issue's title or description. If the issue changes during a delivery, Forge
+keeps the approved text pinned and pauses work on the changed requirements.
+Review the edit and remove and reapply the ready label for a standalone issue.
+Changes to issues in an approved grouped delivery require a membership decision.
+
 ## Read the factory line
 
 ![Factory line map: Queued feeds Build, Review and Security audit; Waiting to merge follows. Needs attention, Waiting on other issues and On hold sit alongside the line.](assets/factory-bays.svg)

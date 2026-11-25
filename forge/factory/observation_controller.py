@@ -10,7 +10,7 @@ import uuid
 from ..store.db import StoreError
 from ..store.models import Command, TransitionError
 from ..store.queries import Queries
-from ..store.transitions import Lifecycle, TERMINAL
+from ..store.transitions import Lifecycle, TERMINAL, manifest_hash
 from .github import GitHubUnavailable
 from ..request_metrics import RequestBudgetExhausted, RequestMetrics, request_scope, deadline
 from .ownership import ownership, active_publication_matches
@@ -18,9 +18,10 @@ from .ownership import ownership, active_publication_matches
 
 class ObservationController:
     def __init__(self, store, github, *, admission, policy=None, readiness=None,
-                 hold_labels=('hold', 'blocked'), clock=time.time, monotonic=time.monotonic):
+                 hold_labels=('hold', 'blocked'), ready_label='ready', clock=time.time, monotonic=time.monotonic):
         self.store, self.github, self.admission = store, github, admission
         self.policy, self.hold_labels, self.clock = policy, tuple(hold_labels), clock
+        self.ready_label = ready_label
         self.monotonic = monotonic
         self.readiness = readiness
         self.commands = Lifecycle(store, clock=clock)
@@ -134,6 +135,15 @@ class ObservationController:
             assignees=assignees, hold_labels=self.hold_labels,
             assignee_types={row['login']: row['type'] for row in remote.get('assignees', [])
                             if isinstance(row, dict) and row.get('type')})
+        member = next(row for row in unit['members'] if row['id'] == member_id)
+        content_approved = False
+        if (remote['state'] == 'open' and not unit['delivery_approved'] and self.ready_label in labels
+                and (manifest_hash([observation['title'], observation['body']]) != issue['content_hash']
+                     or issue['current_revision_id'] != member['requirements_revision_id'])):
+            try:
+                content_approved = self.github.ready_approves(item, remote, self.ready_label) is True
+            except GitHubUnavailable:
+                pass  # Keep the approved text pinned and retry verification on the next observation.
         remote_pr, observation_error = None, None
         if candidate:
             try:
@@ -155,7 +165,7 @@ class ObservationController:
             except (GitHubUnavailable, RequestBudgetExhausted) as error:
                 observation_error = error
         outcome = self.commands.observe_issue(self._command(unit), issue['id'], **observation,
-            admission=None if self.readiness else allowed, ownership_conflict=conflict)
+            admission=None if self.readiness else allowed, ownership_conflict=conflict, content_approved=content_approved)
         if self.readiness and allowed is not None and not outcome.get('stale'):
             self.readiness.observe(unit_id)
         if observation_error:

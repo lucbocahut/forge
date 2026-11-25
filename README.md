@@ -62,8 +62,9 @@ for supported hosts, credential storage and troubleshooting.
 - **Settings → Connections:** manage GitHub access, coding accounts and external agents.
 - **Settings → General → Updates:** check published GitHub releases and open update instructions.
 
-Label an issue `ready` to make it eligible for work. To group related issues,
-open **Plan repository work**, request triage and approve the proposed group.
+Label an issue `ready` to make it eligible for work. If you edit its title or
+description, remove and reapply `ready` to approve the edit. To group related
+issues, open **Plan repository work**, request triage and approve the proposed group.
 Forge builds one pull request for the group and reviews it as a whole.
 
 Forge enforces its own merge checks and respects existing GitHub rules. It does

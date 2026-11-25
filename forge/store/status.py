@@ -154,6 +154,8 @@ def describe_gate(gate):
                 'Forge is reconciling an uncertain GitHub action; no further sends are scheduled until its outcome is known')
     if gate['code'] == 'dependency' and details.get('reason') == 'prerequisite_output_pending':
         return 'Waiting for accepted prerequisite outputs'
+    if gate['code'] == 'membership_decision' and details.get('reason') == 'requirements_revision_changed':
+        return 'Waiting for approval of the updated issue requirements'
     if gate['code'] == 'environment' and (rule := github_rule(details.get('value', details))):
         return rule['headline']
     return describe(gate['code'])

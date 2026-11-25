@@ -328,12 +328,18 @@ class DiscoveryController:
                 self.inventory.record(dict(id=row['repo_id'], name=row['full_name'], enabled=True), remote, requirements)
                 if labels.intersection(self.config['hold_labels']) or ownership(remote, item, item['repo'], self.github.pulls(item)):
                     continue
-                target = self.github.target(item)
-                if not self.github.protections(item, {'base_ref': target}):
-                    continue
                 issue = Queries(self.store).issue(row['id'])
                 if not complete_requirements(issue['requirements']):
                     raise RequirementsStale('admission requires fresh complete issue requirements')
+                if (issue['requirements'] != requirements or issue['content_hash'] != manifest_hash([remote['title'], remote.get('body') or ''])
+                        or set(issue['labels']) != labels):
+                    continue
+                if self.github.ready_approves(item, remote, self.config['ready_label']) is not True:
+                    results.append({'issue_id': row['id'], 'pending': 'ready_reapproval'})
+                    continue
+                target = self.github.target(item)
+                if not self.github.protections(item, {'base_ref': target}):
+                    continue
                 result = Lifecycle(self.store, clock=self.clock).admit_known_issue(request_id=str(uuid.uuid4()), actor_id='supervisor:discovery',
                     unit_id=str(uuid.uuid4()), issue_id=row['id'], expected_issue_version=issue['version'], base_branch=target)
                 self.inventory.clear_failure(row['id'])
