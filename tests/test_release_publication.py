@@ -51,7 +51,7 @@ class PublicationTests(unittest.TestCase):
         run = Mock(side_effect=[response(draft()), response({})])
         self.assertEqual(prepare(REVISION, run=run), 'build')
         self.assertEqual(run.call_args.args[0], ['gh', 'release', 'delete', 'forge-build-' + REVISION,
-                                               '--repo', 'XRPL-Commons/forge', '--yes'])
+                                               '--repo', 'lucbocahut/forge', '--yes'])
         self.assertTrue(run.call_args.kwargs['capture_output'])
 
     def test_draft_requires_exact_tag_target_and_workflow_owner(self):

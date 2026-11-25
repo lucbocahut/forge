@@ -163,8 +163,8 @@ export default async function (page, { base, scenario, requests, observeIssue })
   // in with it: the board's confirmation, the board's payload.
   // Investigations are drawn nowhere else, so they keep one collapsed line.
   // The issue envelope must identify the recovery job's repository and issue.
-  await observeIssue('1:610', { key: '3:900', repo_id: 3, repo: 'XRPL-Commons/forge',
-    number: 900, url: 'https://github.com/XRPL-Commons/forge/issues/900', active: null })
+  await observeIssue('1:610', { key: '3:900', repo_id: 3, repo: 'lucbocahut/forge',
+    number: 900, url: 'https://github.com/lucbocahut/forge/issues/900', active: null })
   await page.goto(base + '/')
   await waitForText(page, 'Investigations and cleanup · 2')
   assert.equal(await page.locator('#runners .issue-card').count(), 0, 'investigations stay folded until asked for')

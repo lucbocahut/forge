@@ -4,7 +4,7 @@
 
 Report vulnerabilities privately through GitHub: open the repository's
 **Security** tab and choose **Report a vulnerability**, or go directly to
-[the private report form](https://github.com/XRPL-Commons/forge/security/advisories/new).
+[the private report form](https://github.com/lucbocahut/forge/security/advisories/new).
 Do not open a public issue for a vulnerability.
 
 Do not publish exploit details, credentials, private source or raw worker output.

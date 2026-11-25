@@ -14,7 +14,7 @@ from forge.release_artifacts import ASSETS, ArtifactError, release_tag, manifest
 from .contracts import SetupError, require
 from .github import run_bounded
 
-REPOSITORY = 'XRPL-Commons/forge'
+REPOSITORY = 'lucbocahut/forge'
 MANIFEST_LIMIT = 128 * 1024
 
 

@@ -22,7 +22,7 @@ GitHub-confirmed merge allows the final repository handover.
 ## Install the CLI and start
 
 ```sh
-uv tool install 'git+https://github.com/XRPL-Commons/forge.git'
+uv tool install 'git+https://github.com/lucbocahut/forge.git'
 forge self-update
 forge install --ssh anvil
 ```

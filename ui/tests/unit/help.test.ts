@@ -40,7 +40,7 @@ describe('renderHelp', () => {
 
   it('rewrites a relative *.md link to the GitHub blob URL', () => {
     const { html } = renderHelp('See [installation](installation.md) for details.\n')
-    expect(html).toContain('href="https://github.com/XRPL-Commons/forge/blob/main/docs/installation.md"')
+    expect(html).toContain('href="https://github.com/lucbocahut/forge/blob/main/docs/installation.md"')
     expect(html).toContain('>installation</a>')
   })
 
@@ -197,7 +197,7 @@ describe('operator help guides', () => {
   it('keeps guide links and fragments in Forge, with source links on GitHub', () => {
     const { html } = renderHelp('[states](issue-state-machine.md#when-progress-stops) [source](../forge/factory/contracts.py) [here](#main-path) [bad](//evil.example)')
     expect(html).toContain('href="/setup-help?topic=workflow#when-progress-stops"')
-    expect(html).toContain('href="https://github.com/XRPL-Commons/forge/blob/main/forge/factory/contracts.py"')
+    expect(html).toContain('href="https://github.com/lucbocahut/forge/blob/main/forge/factory/contracts.py"')
     expect(html).toContain('href="#main-path"')
     expect(html).not.toContain('href="//')
   })
@@ -255,7 +255,7 @@ describe('Help image boundary', () => {
 
   it('does not extend image permissions to issue Markdown', () => {
     for (const src of ['assets/setup-hero.svg', '/_ui/help-assets/setup-hero.svg', 'https://tracker.example/pixel.svg']) {
-      expect(renderMarkdown(`![No image](${src})`, 'XRPL-Commons/forge')).not.toContain('<img')
+      expect(renderMarkdown(`![No image](${src})`, 'lucbocahut/forge')).not.toContain('<img')
     }
   })
 

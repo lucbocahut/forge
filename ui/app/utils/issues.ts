@@ -610,5 +610,5 @@ export function countText(list: Pick<IssueListResponse, 'total' | 'page' | 'page
 
 export function forgeReportUrl(report: IssueRow['forge_problem_report']): string | undefined {
   if (!report || report.status !== 'draft') return undefined
-  return 'https://github.com/XRPL-Commons/forge/issues/new?' + new URLSearchParams({ title: report.title, body: report.body })
+  return 'https://github.com/lucbocahut/forge/issues/new?' + new URLSearchParams({ title: report.title, body: report.body })
 }

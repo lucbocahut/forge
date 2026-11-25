@@ -23,7 +23,7 @@ class PreparedReleaseSelectionTests(unittest.TestCase):
         run, fetch = Mock(return_value=json.dumps(rows).encode()), Mock(return_value=manifest())
         with patch('forge_client.install.shutil.which', return_value='/usr/bin/gh'):
             self.assertEqual(revision(run=run, fetch_manifest=fetch), REVISION)
-        self.assertEqual(run.call_args.args[0][-1], 'repos/XRPL-Commons/forge/releases?per_page=100')
+        self.assertEqual(run.call_args.args[0][-1], 'repos/lucbocahut/forge/releases?per_page=100')
         fetch.assert_called_once_with(REVISION)
 
     def test_explicit_sha_is_stable_without_network(self):

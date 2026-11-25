@@ -7,7 +7,7 @@ You do not need to SSH into the VM or copy configuration files yourself.
 ## Host installation
 
 ```sh
-uv tool install 'git+https://github.com/XRPL-Commons/forge.git'
+uv tool install 'git+https://github.com/lucbocahut/forge.git'
 forge install --ssh anvil
 ```
 

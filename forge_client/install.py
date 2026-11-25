@@ -18,7 +18,7 @@ from .source import export as export_source
 
 SOURCE = '/home/forge/forge'
 ROOT = '/home/forge/.local/share/forge'
-REPOSITORY = 'https://github.com/XRPL-Commons/forge.git'
+REPOSITORY = 'https://github.com/lucbocahut/forge.git'
 STEPS = ['packages', 'account', 'source', 'isolation', 'host']
 ERRORS = {
     'server_maintenance_required': 'The installed server predates this setup command. Update it on the host with bin/forge update, then continue setup.',
@@ -139,7 +139,7 @@ def revision(value=None, *, run=run_bounded, fetch_manifest=None):
     try:
         raw = run([executable, 'api', '--hostname', 'github.com', '--method', 'GET',
                    '-H', 'Accept: application/vnd.github+json',
-                   'repos/XRPL-Commons/forge/releases?per_page=100'])
+                   'repos/lucbocahut/forge/releases?per_page=100'])
         releases = json.loads(raw)
         require(isinstance(releases, list), 'prepared_release_unavailable')
         required_assets = {'manifest.json', ASSETS['ui']}

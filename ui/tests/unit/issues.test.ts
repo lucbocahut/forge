@@ -428,7 +428,7 @@ describe('Forge fault report draft', () => {
     const title = 'Harness failed: A & B #12'
     const body = 'First line\nSecond line with ? & # characters'
     const url = new URL(forgeReportUrl({ status: 'draft', signature: 'safe-hash', title, body, affected: 2 })!)
-    expect(url.origin + url.pathname).toBe('https://github.com/XRPL-Commons/forge/issues/new')
+    expect(url.origin + url.pathname).toBe('https://github.com/lucbocahut/forge/issues/new')
     expect(url.searchParams.get('title')).toBe(title)
     expect(url.searchParams.get('body')).toBe(body)
     expect(forgeReportUrl(null)).toBeUndefined()

@@ -37,36 +37,11 @@ overwritten. A retry replaces an incomplete draft only when it belongs to
 `github-actions[bot]` and names the exact tested commit. Human-owned drafts remain
 untouched. The UI archive must fit GitHub's 2 GiB release asset limit.
 
-### Retiring the binary-publishing workflow
+### Manifest version
 
 The current workflow rejects source revisions whose producer does not declare
 manifest version 2. This stops an old CI completion event from using the new
 workflow to publish version 1 artifacts.
-
-**This does not secure a rerun of an old workflow execution.** GitHub reruns can
-execute historical workflow code, including its former publication permissions.
-The new publisher has a separate workflow identity,
-`.github/workflows/prepared-ui-release.yml`. Keep the old `prepared-release.yml`
-path registered as the inert notice checked into this repository. A live check
-on 7 November 2026 found that GitHub accepted historical reruns after that file
-was deleted, while refusing both enable and disable operations on its `deleted`
-workflow record. The probe's already-published release made every build and
-publication step skip; no assets changed.
-
-At cutover, a maintainer with Actions
-write/admin access must cancel active runs of the retired `prepared-release.yml`
-workflow and disable that old workflow ID using GitHub administration. Confirm
-that the new UI workflow is active, the old one reports `disabled_manually`, and
-attempting to rerun a historical publisher is refused. Record that result.
-[GitHub documents that disabled workflows cannot be rerun](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/re-run-workflows-and-jobs).
-Do not delete the inert workflow file after disabling it.
-
-This prevents accidental use of the retired publisher; an authorized maintainer
-can deliberately re-enable it. No workflow-run history, historical releases or
-assets are deleted by this change. If GitHub still allows a disabled workflow to
-rerun, stop publication cutover and choose an explicit administrative remedy
-before declaring the old path retired. Changing default token permissions or
-adding an environment only to the new workflow is not sufficient.
 
 ### UI dependency notices
 
@@ -110,7 +85,7 @@ First reinstall the CLI directly from an exact, published version 2-capable
 Forge commit (replace `<FULL_COMMIT_SHA>` with that release's full commit):
 
 ```sh
-uv tool install --force --refresh 'git+https://github.com/XRPL-Commons/forge.git@<FULL_COMMIT_SHA>'
+uv tool install --force --refresh 'git+https://github.com/lucbocahut/forge.git@<FULL_COMMIT_SHA>'
 ```
 
 Then use the upgraded `forge install` or update flow. Do this before removing
