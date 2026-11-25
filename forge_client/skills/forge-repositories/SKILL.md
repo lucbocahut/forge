@@ -6,7 +6,7 @@ description: Set up repositories on an existing Forge server through the local F
 # Forge repositories
 
 Use the local `forge` executable on the operator's computer. Install with
-`uv tool install 'git+https://github.com/XRPL-Commons/forge.git'`, then run
+`uv tool install 'git+https://github.com/lucbocahut/forge.git'`, then run
 `forge self-update` to select the latest prepared release. This installs the local
 client and shared Python modules without starting a server. Existing-host operator
 sign-in uses `forge server setup --help`.

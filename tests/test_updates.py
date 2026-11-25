@@ -65,7 +65,7 @@ class UpdateTests(unittest.TestCase):
         response.status, response.headers = 200, {}
         with patch('forge.updates.urllib.request.urlopen', return_value=response) as fetch:
             self.assertEqual(public_manifest(OLD), manifest())
-        self.assertEqual(fetch.call_args.args, ('https://github.com/XRPL-Commons/forge/releases/download/forge-build-' + OLD + '/manifest.json',))
+        self.assertEqual(fetch.call_args.args, ('https://github.com/lucbocahut/forge/releases/download/forge-build-' + OLD + '/manifest.json',))
         self.assertIn('timeout', fetch.call_args.kwargs)
         response = io.BytesIO(b'x' * (128 * 1024 + 1)); response.status, response.headers = 200, {}
         with patch('forge.updates.urllib.request.urlopen', return_value=response), self.assertRaises(ValueError):

@@ -13,7 +13,7 @@ type TocEntry = { id: string; text: string; level: 1 | 2 }
 export type HelpBlock = { html: string } | { diagram: string; title: string }
 export type HelpDoc = { html: string; toc: TocEntry[]; blocks: HelpBlock[] }
 
-const DOCS_BASE = 'https://github.com/XRPL-Commons/forge/blob/main/docs/'
+const DOCS_BASE = 'https://github.com/lucbocahut/forge/blob/main/docs/'
 const ALLOWED_ATTRIBUTES = {
   ...Object.fromEntries(Object.entries(MARKDOWN_ALLOWLIST.attributes).filter(([tag]) => tag !== 'input')),
   h1: ['id'], h2: ['id'], h3: ['id'], h4: ['id'], h5: ['id'], h6: ['id'],
@@ -31,7 +31,7 @@ function resolveHref(href: string): string | null {
   // Source-code references in a guide remain on the project's GitHub tree.
   if (/^\.\.\/(forge|deploy|ui)\/[a-zA-Z0-9_./-]+$/.test(href)) {
     const resolved = new URL(href, DOCS_BASE)
-    return resolved.pathname.startsWith('/XRPL-Commons/forge/blob/main/') ? resolved.href : null
+    return resolved.pathname.startsWith('/lucbocahut/forge/blob/main/') ? resolved.href : null
   }
   try {
     const url = new URL(href)

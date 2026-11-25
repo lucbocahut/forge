@@ -5,7 +5,7 @@
 Use the complete CLI flow on a dedicated Ubuntu 24.04 VM:
 
 ```sh
-uv tool install 'git+https://github.com/XRPL-Commons/forge.git'
+uv tool install 'git+https://github.com/lucbocahut/forge.git'
 forge self-update
 forge install --ssh anvil
 ```
@@ -103,7 +103,7 @@ cat /sys/module/apparmor/parameters/enabled   # must print Y
 sudo useradd --create-home --shell /bin/bash forge
 sudo usermod -aG docker forge
 sudo loginctl enable-linger forge
-sudo -iu forge git clone https://github.com/XRPL-Commons/forge.git
+sudo -iu forge git clone https://github.com/lucbocahut/forge.git
 sudo install -m 0644 ~forge/forge/deploy/runner/forge-runner-private-proc.apparmor /etc/apparmor.d/forge-runner-private-proc
 sudo apparmor_parser -r /etc/apparmor.d/forge-runner-private-proc
 ```
@@ -329,7 +329,7 @@ a different name is refused. Reload the web page afterward.
 ## Check for updates
 
 Open **Settings → General → Updates** to see the installed revision and the
-latest complete published build from `XRPL-Commons/forge`. **Check for updates**
+latest complete published build from `lucbocahut/forge`. **Check for updates**
 refreshes the result; release notes and the supported upgrade instructions are
 linked there. Checking does not install anything or interrupt workers.
 

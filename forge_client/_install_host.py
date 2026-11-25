@@ -22,7 +22,7 @@ STATE = Path('/var/lib/forge-install')
 HOME = Path('/home/forge')
 SOURCE = HOME / 'forge'
 ROOT = HOME / '.local/share/forge'
-REPOSITORY = 'https://github.com/XRPL-Commons/forge.git'
+REPOSITORY = 'https://github.com/lucbocahut/forge.git'
 STEPS = ('packages', 'account', 'source', 'isolation', 'host')
 PACKAGES = ('ca-certificates', 'git', 'sudo', 'apparmor', 'apparmor-utils',
             'docker.io', 'docker-buildx', 'docker-compose-v2', 'python3', 'build-essential')

@@ -38,8 +38,8 @@ async function check() {
     </p>
     <p v-if="current" class="mt-1 text-xs text-muted">Checked {{ localTime(current.checked_at) }}</p>
     <div class="mt-3 flex flex-wrap gap-4 text-sm">
-      <a :href="current?.latest?.url || 'https://github.com/XRPL-Commons/forge/releases'" target="_blank" rel="noopener noreferrer" class="text-sky-200 hover:underline">{{ current?.latest ? 'Release notes ↗' : 'GitHub releases ↗' }}</a>
-      <a v-if="current?.status === 'available'" href="https://github.com/XRPL-Commons/forge/blob/main/docs/store-migration.md#upgrade-an-installation" target="_blank" rel="noopener noreferrer" class="text-sky-200 hover:underline">Update instructions ↗</a>
+      <a :href="current?.latest?.url || 'https://github.com/lucbocahut/forge/releases'" target="_blank" rel="noopener noreferrer" class="text-sky-200 hover:underline">{{ current?.latest ? 'Release notes ↗' : 'GitHub releases ↗' }}</a>
+      <a v-if="current?.status === 'available'" href="https://github.com/lucbocahut/forge/blob/main/docs/store-migration.md#upgrade-an-installation" target="_blank" rel="noopener noreferrer" class="text-sky-200 hover:underline">Update instructions ↗</a>
     </div>
   </section>
 </template>

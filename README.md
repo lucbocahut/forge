@@ -24,7 +24,7 @@ Mac hosting is not supported by this installer yet.
 Install the CLI on your computer, then start setup:
 
 ```sh
-uv tool install 'git+https://github.com/XRPL-Commons/forge.git'
+uv tool install 'git+https://github.com/lucbocahut/forge.git'
 forge self-update
 forge install --ssh USER@HOST
 ```

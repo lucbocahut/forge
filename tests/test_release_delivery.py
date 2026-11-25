@@ -33,7 +33,7 @@ class ReleaseDeliveryTests(unittest.TestCase):
         with patch('shutil.which', return_value='gh'):
             self.assertEqual(revision(run=run), REVISION)
         manifest_call = run.call_args_list[-1]
-        self.assertEqual(manifest_call.args[0][-1], 'repos/XRPL-Commons/forge/releases/assets/42')
+        self.assertEqual(manifest_call.args[0][-1], 'repos/lucbocahut/forge/releases/assets/42')
         self.assertIn('Accept: application/octet-stream', manifest_call.args[0])
         self.assertEqual(manifest_call.kwargs['output_limit'], 128 * 1024)
 
@@ -75,7 +75,7 @@ class ReleaseDeliveryTests(unittest.TestCase):
         self.assertEqual(set(result['urls']), {'runner'})
         self.assertNotIn('gho_local_only', json.dumps(result))
         request = opener.open.call_args.args[0]
-        self.assertEqual(request.full_url, 'https://api.github.com/repos/XRPL-Commons/forge/releases/assets/11')
+        self.assertEqual(request.full_url, 'https://api.github.com/repos/lucbocahut/forge/releases/assets/11')
         self.assertEqual(request.get_header('Authorization'), 'Bearer gho_local_only')
         self.assertIsNone(delivery._NoRedirect().redirect_request(None, None, 302, '', {}, result['urls']['runner']))
 

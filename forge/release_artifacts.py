@@ -23,7 +23,7 @@ import urllib.error
 import urllib.request
 import urllib.parse
 
-REPOSITORY = 'XRPL-Commons/forge'
+REPOSITORY = 'lucbocahut/forge'
 ASSETS = {'ui': 'forge-ui-linux-amd64.tar.gz', 'runner': 'forge-runner-linux-amd64.tar.gz',
           'full': 'forge-runner-full-linux-amd64.tar.gz'}
 SHA256 = re.compile(r'[0-9a-f]{64}')

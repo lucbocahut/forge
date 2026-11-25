@@ -8,7 +8,7 @@ import tempfile
 from .contracts import SetupError, require
 from .github import run_bounded
 
-REPOSITORY = 'https://github.com/XRPL-Commons/forge.git'
+REPOSITORY = 'https://github.com/lucbocahut/forge.git'
 PACK_LIMIT = 32 * 1024 * 1024
 
 
@@ -52,4 +52,4 @@ def export(revision, *, previous=None, run=run_bounded):
     except SetupError as error:
         if error.code == 'source_not_forward':
             raise
-        raise SetupError('source_unavailable', 'Could not export the pinned Forge source locally. Check local GitHub access to XRPL-Commons/forge, then resume; no GitHub credential was sent to the VM.') from None
+        raise SetupError('source_unavailable', 'Could not export the pinned Forge source locally. Check local GitHub access to lucbocahut/forge, then resume; no GitHub credential was sent to the VM.') from None

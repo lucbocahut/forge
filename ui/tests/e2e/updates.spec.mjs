@@ -5,7 +5,7 @@ export default async function (page, { base, scenario, requests }) {
   const card = page.locator('#updates')
   await card.getByText('An update is available.', { exact: true }).waitFor()
   assert.match(await card.innerText(), /Installed: a{12}.*Latest: b{12}/)
-  assert.match(await card.getByRole('link', { name: 'Release notes' }).getAttribute('href'), /github.com\/XRPL-Commons\/forge\/releases\/tag/)
+  assert.match(await card.getByRole('link', { name: 'Release notes' }).getAttribute('href'), /github.com\/lucbocahut\/forge\/releases\/tag/)
   await card.getByRole('button', { name: 'Check for updates' }).click()
   await page.waitForFunction(() => !document.querySelector('#updates button')?.disabled)
   const reads = (await requests()).filter(row => row.path === '/api/updates')

@@ -69,7 +69,7 @@ def update(*, revision=None):
     directory = run_bounded([uv, 'tool', 'dir', '--bin'], environ=environment).decode().strip()
     require(bool(directory) and Path(directory).is_absolute(), 'invalid_uv_directory')
     run_bounded([uv, 'tool', 'install', '--reinstall',
-                 'git+https://github.com/XRPL-Commons/forge.git@' + commit],
+                 'git+https://github.com/lucbocahut/forge.git@' + commit],
                 environ=environment, timeout=900)
     command = str(Path(directory) / 'forge')
     observed = json.loads(run_bounded([command, '--json', 'version'], environ=environment))

@@ -49,7 +49,7 @@ class VersionTests(unittest.TestCase):
             result=version.update(revision=commit)
         self.assertEqual(result['command'],'/private/tools/bin/forge')
         self.assertEqual(run.call_args_list[1].args[0],['/usr/local/bin/uv','tool','install','--reinstall',
-            'git+https://github.com/XRPL-Commons/forge.git@'+commit])
+            'git+https://github.com/lucbocahut/forge.git@'+commit])
         for call in run.call_args_list:
             self.assertNotIn('GH_TOKEN',call.kwargs['environ'])
             self.assertNotIn('GITHUB_TOKEN',call.kwargs['environ'])
