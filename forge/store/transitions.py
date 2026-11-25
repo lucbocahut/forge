@@ -125,7 +125,8 @@ def _collect_gates(db, unit):
         "SELECT m.id FROM unit_issues m JOIN issues i ON i.id = m.issue_id "
         "JOIN issue_revisions current ON current.id = i.current_revision_id "
         "JOIN issue_revisions pinned ON pinned.id = m.requirements_revision_id "
-        "WHERE m.unit_id = ? AND m.left_at IS NULL AND current.requirements_hash != pinned.requirements_hash",
+        "WHERE m.unit_id = ? AND m.left_at IS NULL "
+        "AND (current.requirements_hash != pinned.requirements_hash OR current.content_hash != pinned.content_hash)",
         (unit["id"],),
     ):
         gates.append({"id": None, "unit_id": unit["id"], "member_id": row["id"], "candidate_id": None,
@@ -1110,9 +1111,11 @@ class Lifecycle:
 
     def observe_issue(self, command, issue_id, *, state, title, body, requirements,
                       remote_updated_at, generation, state_reason=None, labels=(), assignees=(),
-                      hold_labels=("hold", "blocked"), admission=None, ownership_conflict=None, assignee_types=None):
+                      hold_labels=("hold", "blocked"), admission=None, ownership_conflict=None, assignee_types=None,
+                      content_approved=False):
         """Apply an ordered authoritative observation to a current or historical member.
 
+        Revised issue text becomes eligible for standalone work with verified approval.
         Reopening updates GitHub facts only. A terminal unit stays terminal; the
         operator may subsequently admit the issue into a new unit.
         """
@@ -1143,6 +1146,8 @@ class Lifecycle:
             payload.update(hold_labels=sorted(set(hold_labels)), admission=admission, ownership_conflict=ownership_conflict)
         if assignee_types is not None:
             payload['assignee_types'] = assignee_types
+        if content_approved is True:
+            payload['content_approved'] = True
         # Observation ordering/freshness is distinct from the facts and gates
         # authorized by an operator proposal. Other commands keep their CAS bump.
         authority_changed = False
@@ -1186,17 +1191,27 @@ class Lifecycle:
             if assignee_types is not None:
                 db.execute('UPDATE issues SET assignee_types_json=? WHERE id=?', (_json(assignee_types), issue_id))
             if member["left_at"] is None and unit["state"] not in TERMINAL:
-                if requirements_hash != revision["requirements_hash"]:
+                requirements_changed = (requirements_hash != revision["requirements_hash"]
+                                        or content_hash != revision["content_hash"])
+                pinned_changed = member["requirements_revision_id"] != revision_id
+                if requirements_changed or (content_approved is True and pinned_changed):
                     ambiguous = db.execute("SELECT 1 FROM merge_requests WHERE unit_id = ? AND status IN ('pending','uncertain')", (unit["id"],)).fetchone()
                     from .delivery_inputs import approved_in
                     if ambiguous or approved_in(db, unit["id"]):
-                        self.fence_member_in(db, command, member["id"], reason="issue_observation_changed")
-                        if not any(g["code"] == "membership_decision" and g["member_id"] == member["id"] for g in _gates(db, unit["id"])):
-                            self._open_gate(db, command, "membership_decision", {"reason": "requirements_changed", "revision_id": revision_id}, member["id"])
-                    else:
-                        db.execute("UPDATE unit_issues SET requirements_revision_id = ? WHERE id = ?", (revision_id, member["id"]))
-                        db.execute("UPDATE units SET membership_generation = membership_generation + 1 WHERE id = ?", (unit["id"],))
-                        self._invalidate(db, command, unit, "requirements_changed", {"issue_id": issue_id, "revision_id": revision_id})
+                        if requirements_changed:
+                            self.fence_member_in(db, command, member["id"], reason="issue_observation_changed")
+                            if not any(g["code"] == "membership_decision" and g["member_id"] == member["id"] for g in _gates(db, unit["id"])):
+                                self._open_gate(db, command, "membership_decision", {"reason": "requirements_changed", "revision_id": revision_id}, member["id"])
+                    elif pinned_changed:
+                        pinned = db.execute('SELECT content_hash FROM issue_revisions WHERE id=?', (member['requirements_revision_id'],)).fetchone()
+                        if content_approved is not True and content_hash != pinned['content_hash']:
+                            if requirements_changed:
+                                self.fence_member_in(db, command, member["id"], reason="issue_observation_changed")
+                        else:
+                            authority_changed = True
+                            db.execute("UPDATE unit_issues SET requirements_revision_id = ? WHERE id = ?", (revision_id, member["id"]))
+                            db.execute("UPDATE units SET membership_generation = membership_generation + 1 WHERE id = ?", (unit["id"],))
+                            self._invalidate(db, command, unit, "requirements_changed", {"issue_id": issue_id, "revision_id": revision_id})
                 if state == "closed" and old["github_state"] != "closed":
                     self.fence_member_in(db, command, member["id"], reason="issue_observation_changed")
                 matching_hold = [g for g in _gates(db, unit["id"]) if g["code"] == "label_hold" and g["member_id"] == member["id"]]

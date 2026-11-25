@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import Mock
 
 from forge.factory.github import GitHubUnavailable
 from forge.factory.observation_controller import ObservationController
@@ -38,6 +39,46 @@ class ObservationTests(unittest.TestCase):
     def controller(self, github=None, admission=True):
         return ObservationController(self.store, github or GitHub(), admission=lambda item: admission,
                                      clock=lambda: 100.0)
+
+    def test_body_edit_fences_work_and_requires_reapplied_ready_label(self):
+        job = self.reserve()
+        github = GitHub()
+        github.value.update(body='Edited requirement', labels=['ready'])
+        github.requirements = {'acceptance': ['edited']}
+        github.ready_approves = Mock(return_value=False)
+        controller = self.controller(github)
+
+        def revisions():
+            with self.store.read_snapshot() as db:
+                return tuple(db.execute('SELECT i.current_revision_id,m.requirements_revision_id FROM issues i '
+                    'JOIN unit_issues m ON m.issue_id=i.id WHERE m.unit_id=?', ('unit-1',)).fetchone())
+
+        original, _ = revisions()
+        controller.step('unit-1')
+        edited, pinned = revisions()
+        self.assertNotEqual(edited, original)
+        self.assertEqual(pinned, original)
+        with self.store.read_snapshot() as db:
+            self.assertEqual(db.execute('SELECT fenced FROM jobs WHERE id=?', (job['job_id'],)).fetchone()[0], 1)
+        self.cleanup(job)
+        self.assertEqual(self.view()['reason_code'], 'membership_decision')
+
+        github.ready_approves.side_effect = GitHubUnavailable('Approval history is unavailable')
+        controller.step('unit-1')
+        self.assertEqual(revisions(), (edited, original))
+        github.ready_approves.side_effect = None
+        github.ready_approves.return_value = True
+        controller.step('unit-1')
+        self.assertEqual(revisions(), (edited, edited))
+        self.assertIsNone(self.view()['reason_code'])
+
+        github.ready_approves.reset_mock()
+        github.requirements = {'acceptance': ['edited', 'comment']}
+        controller.step('unit-1')
+        current, pinned = revisions()
+        self.assertNotEqual(current, edited)
+        self.assertEqual(current, pinned)
+        github.ready_approves.assert_not_called()
 
     def test_refresh_consumes_only_the_captured_operator_request(self):
         with self.store.write() as db:

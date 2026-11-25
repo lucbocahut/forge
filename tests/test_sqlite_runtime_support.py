@@ -210,6 +210,7 @@ class InventoryRuntimeTests(RuntimeFixture):
         github = Mock()
         github.call.return_value = [self.remote()]
         github.issue.return_value = self.remote(), {'acceptance': ['complete requirement from comments']}
+        github.ready_approves.return_value = True
         github.pulls.return_value = []
         github.target.return_value = 'main'
         github.protections.return_value = True

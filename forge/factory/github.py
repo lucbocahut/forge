@@ -325,6 +325,58 @@ class GitHub:
                                'comments': [(c['id'], c['body']) for c in comments if c.get('user', {}).get('type') == 'User']})
         return value, requirements, comments
 
+    def ready_approves(self, item, issue, ready_label):
+        """Verify that the current ready label approves this exact issue text."""
+        from ..store.remote_time import RemoteTimestampError, instant
+        if ready_label not in {row['name'] if isinstance(row, dict) else row for row in issue.get('labels', [])}:
+            return False
+        node_id = issue.get('node_id')
+        if not isinstance(node_id, str) or not node_id:
+            return False
+        query = '''query IssueReadyApproval($id: ID!, $before: String) {
+          node(id: $id) { ... on Issue {
+            number title body lastEditedAt
+            timelineItems(last: 100, before: $before, itemTypes: [LABELED_EVENT, UNLABELED_EVENT, RENAMED_TITLE_EVENT]) {
+              pageInfo { hasPreviousPage startCursor }
+              nodes {
+                __typename
+                ... on LabeledEvent { createdAt label { name } actor { __typename } }
+                ... on UnlabeledEvent { label { name } }
+              }
+            }
+          } }
+        }'''
+        before = None
+        try:
+            for _ in range(100):
+                observed = self.graphql('controller', item, query, {'id': node_id, 'before': before})['node']
+                if (observed['number'], observed['title'], observed['body'] or '') != (
+                        item['number'], issue['title'], issue.get('body') or ''):
+                    return False
+                edited = observed['lastEditedAt']
+                timeline = observed['timelineItems']
+                # Work backwards so a removal or title edit after approval wins.
+                for event in reversed(timeline['nodes']):
+                    kind = event['__typename']
+                    if kind == 'RenamedTitleEvent':
+                        return False
+                    if kind not in {'LabeledEvent', 'UnlabeledEvent'}:
+                        return False
+                    if event['label']['name'] == ready_label:
+                        # A Forge label write is separate from the revision-checked
+                        # operator decision and could race with an edit.
+                        if kind != 'LabeledEvent' or event['actor']['__typename'] != 'User':
+                            return False
+                        applied = instant(event['createdAt'])
+                        return edited is None or instant(edited) < applied
+                page = timeline['pageInfo']
+                if page['hasPreviousPage'] is not True or not page['startCursor'] or page['startCursor'] == before:
+                    return False
+                before = page['startCursor']
+        except (KeyError, TypeError, RemoteTimestampError):
+            return False
+        return False
+
     def pulls(self, item):
         rows = self.pages('controller', item, '/pulls?state=open')
         publisher = None

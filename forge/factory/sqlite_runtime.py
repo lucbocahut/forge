@@ -81,7 +81,7 @@ def components(root, *, config=None, runner=None, github=None, settings=None, cl
         requirements=requirements, verification=verification, effects=effects, admission=admission, scheduling=scheduling,
         execution=ExecutionController(store, runner, github, admission=execution_admission, clock=clock, enabled=lambda: current_config()['enabled']),
         observations=ObservationController(store, github, admission=admission, readiness=readiness, policy=lambda item: manifest_hash(policy(current_config(),item['repo_id'],repository_name=item['repo'])),
-                                            hold_labels=config['hold_labels'], clock=clock),
+                                            hold_labels=config['hold_labels'], ready_label=config['ready_label'], clock=clock),
         results=ResultController(store, github, policy=lambda item: policy(current_config(),item['repo_id'],repository_name=item['repo']), verdicts=effects,
             requirements=requirements, clock=clock, hold_labels=config['hold_labels'],
             availability_retry_seconds=config['availability_retry_seconds'], scheduling=scheduling, publisher=publisher),

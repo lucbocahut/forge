@@ -449,6 +449,7 @@ class SmokeAdmissionTests(unittest.TestCase):
         for number in (10, 11):
             discovery.inventory.record(dict(self.target, enabled=True), dict(issue, number=number), requirements)
         self.github.issue.return_value = (issue, requirements)
+        self.github.ready_approves.return_value = True
         self.github.pulls.return_value = []
         self.github.target.return_value = 'main'; self.github.protections.return_value = True
         with patch('forge.factory.store_inventory.RepositorySetup') as setup:

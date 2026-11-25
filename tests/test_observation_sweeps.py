@@ -14,12 +14,13 @@ class SweepGitHub(GitHub):
         super().__init__()
         self.allowance=allowance
         self.visited=[]
+        self.value['title']='Issue {number}'
 
     def issue(self,item):
         if self.allowance is not None and len(self.visited)>=self.allowance:
             raise GitHubBudgetExhausted('Next cycle')
         self.visited.append(item['number'])
-        return {**self.value,'number':item['number']},self.requirements
+        return {**self.value,'number':item['number'],'title':self.value['title'].format(number=item['number'])},self.requirements
 
 
 class SweepTests(unittest.TestCase):
@@ -47,7 +48,7 @@ class SweepTests(unittest.TestCase):
         self.admit(2)
         self.controller(SweepGitHub(1)).cycle()
         self.lifecycle.admit_issue(request_id='admit-new',actor_id='operator',unit_id='aaa-new',issue_id='issue-new',
-            repository_id=1,repository_name='owner/repository',issue_number=3,title='Fresh',body='Body',
+            repository_id=1,repository_name='owner/repository',issue_number=3,title='Issue 3',body='Implement the requirement',
             requirements={'acceptance':['works']},observed_at=100)
         result=self.controller(SweepGitHub()).cycle()
         self.assertEqual(result['sweep']['coverage']['stale_members'],0)
@@ -108,6 +109,7 @@ class GroupSweepTests(unittest.TestCase):
     command=delivery_helpers.DeliveryExecutionTests.command
 
     def controller(self,github):
+        github.value.update(title='Issue',body='Scope')
         return ObservationController(self.store,github,admission=lambda item:True,clock=lambda:100)
 
     def test_interrupted_group_resumes_exact_pending_member_without_charging_failure(self):

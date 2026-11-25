@@ -64,3 +64,49 @@ class IssueInputTests(unittest.TestCase):
         self.assertIs(observed, comments)
         self.assertEqual(value['number'], 7)
         self.assertEqual(len(digest), 64)
+
+
+class ReadyApprovalTests(unittest.TestCase):
+    def setUp(self):
+        self.github = GitHub(Mock(), {}, client=Mock())
+        self.item = {'repo_id': 12, 'repo': 'example/project', 'number': 7}
+        self.issue = {'node_id': 'issue-node', 'title': 'Issue', 'body': 'Current text', 'labels': ['go']}
+        self.applied = dict(__typename='LabeledEvent', label={'name': 'go'}, actor={'__typename': 'User'},
+                            createdAt='2026-10-08T10:00:00Z')
+        self.timeline = {'nodes': [self.applied], 'pageInfo': {'hasPreviousPage': False, 'startCursor': 'first'}}
+        self.node = dict(number=7, title='Issue', body='Current text', lastEditedAt=None, timelineItems=self.timeline)
+        self.github.graphql = Mock(return_value={'node': self.node})
+
+    def approved(self):
+        return self.github.ready_approves(self.item, self.issue, 'go')
+
+    def test_body_edit_requires_label_reapplied_strictly_after_edit(self):
+        self.assertTrue(self.approved())
+        for time in ('2026-10-08T10:00:00Z', '2026-10-08T10:01:00Z', 'invalid'):
+            with self.subTest(time=time):
+                self.node['lastEditedAt'] = time
+                self.assertFalse(self.approved())
+        self.node['lastEditedAt'] = '2026-10-08T10:01:00Z'
+        self.timeline['nodes'].extend([
+            dict(__typename='UnlabeledEvent', label={'name': 'go'}),
+            {**self.applied, 'createdAt': '2026-10-08T10:02:00Z'},
+        ])
+        self.assertTrue(self.approved())
+
+    def test_missing_removed_or_stale_approval_cannot_authorize(self):
+        for nodes in ([], [{**self.applied, 'actor': {'__typename': 'Bot'}}],
+                      [self.applied, dict(__typename='UnlabeledEvent', label={'name': 'go'})],
+                      [self.applied, dict(__typename='RenamedTitleEvent')]):
+            with self.subTest(nodes=nodes):
+                self.timeline['nodes'] = nodes
+                self.assertFalse(self.approved())
+        self.timeline['nodes'] = [self.applied]
+        self.node['body'] = 'Changed during approval check'
+        self.assertFalse(self.approved())
+
+    def test_reads_older_events_when_newer_labels_are_unrelated(self):
+        newer = {'nodes': [{**self.applied, 'label': {'name': 'other'}}],
+                 'pageInfo': {'hasPreviousPage': True, 'startCursor': 'next'}}
+        self.github.graphql.side_effect = [{'node': {**self.node, 'timelineItems': newer}}, {'node': self.node}]
+        self.assertTrue(self.approved())
+        self.assertEqual(self.github.graphql.call_args.args[3], {'id': 'issue-node', 'before': 'next'})

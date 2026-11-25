@@ -130,6 +130,10 @@ checks pass and no issues are queued, open the linked repository and add the
 configured ready label to an issue you want Forge to handle. Forge does not
 create a demonstration issue automatically.
 
+After editing an issue's title or description, remove and reapply the ready
+label to approve the new text. For an issue still in the backlog, you can also
+review the current description and choose **Queue for Forge**.
+
 The Issues page lists open work in enabled repositories, including issues that
 have never been queued for Forge. Search or filter by repository and state; use
 Completed to find closed work. Opening an issue shows its description, blocker,
