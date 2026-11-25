@@ -9,7 +9,7 @@ There is no manual build or switch-over step. See
 | Service | Listens on | Runs |
 |---|---|---|
 | `forge-ui` | `<bind>:8787` | The Nitro build of `ui/`, in the pinned Node image (read-only, non-root, host network) |
-| `forge-status` | `127.0.0.1:8788` | `legacy/forge-status.py`: the JSON API and the GitHub App callback |
+| `forge-status` | `127.0.0.1:8788` | `forge.status_api`, the JSON API and the GitHub App callback |
 | `forge-supervisor` | — | `bin/forge service` |
 
 The status API accepts only requests carrying the secret in

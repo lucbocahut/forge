@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Loopback JSON API behind the operator UI (ui/), for the durable factory.
 
-Only the UI may call it (UPSTREAM_SECRET). Writes also require configured
-operator sign-in, a signed-in operator, a same-origin JSON request and that
-session's CSRF token; without sign-in there is no control. The server queues
-intent; only the locked supervisor acts on it.
+Only the UI may call it (UPSTREAM_SECRET). Operational reads and browser
+mutations require a signed-in operator. Browser mutations also require a
+same-origin JSON request and the session's CSRF token. The server queues intent;
+only the locked supervisor acts on it.
 """
 import hashlib
 import json, re, subprocess, os, secrets, hmac, threading, ipaddress
@@ -15,8 +15,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs
 
 PORT = 8787
-HOME = str(Path.home())
-WD = os.environ.get("FORGE_ROOT", f"{HOME}/ops/forge-watchdog")
+WD = os.environ.get("FORGE_ROOT", str(Path.home() / ".local/share/forge"))
 from forge.view_cache import ViewCache
 from forge.mutation_audit import RequestReplay
 VIEWS = ViewCache()
@@ -232,7 +231,7 @@ class H(BaseHTTPRequestHandler):
             return False
 
     def _signed_in(self):
-        if self._auth_config and not self._session:
+        if not self._session:
             self.send_error(401)
             return False
         return True
@@ -670,8 +669,7 @@ class H(BaseHTTPRequestHandler):
         if u.path == '/api/connections':
             try:
                 from forge.client_connections import ClientConnections
-                result = ClientConnections(WD, auth=self._auth).view(self._session_token) if self._auth_config else {
-                    'enabled': False, 'connections': [], 'reason': 'Configure HTTPS and operator sign-in to connect an agent.'}
+                result = ClientConnections(WD, auth=self._auth).view(self._session_token)
                 self._send(json.dumps({'ok': True, **result, 'controls_token': self._action_token}))
             except (ValueError, OSError, RuntimeError, KeyError, TypeError):
                 self._send(json.dumps({'ok': False, 'reason': 'Connections are unavailable until setup or reset has completed.'}))

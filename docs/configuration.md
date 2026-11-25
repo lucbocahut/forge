@@ -12,10 +12,10 @@ Configuration refers to stored credentials by name (`private_key_env`, `provider
 
 | Variable | Read by | Default | Purpose |
 |---|---|---|---|
-| `FORGE_ROOT` | `legacy/forge-status.py`, UI help route | set by setup for the API; `/app` in the UI container | Runtime root: state, configuration, credentials |
-| `FORGE_BIND_ADDRESS` | `legacy/forge-status.py` | none; must be `127.0.0.1` | Status API listen address. The API refuses to start otherwise |
-| `FORGE_PORT` | `legacy/forge-status.py` | `8787` in code; setup writes `8788` | Status API port (the UI takes 8787) |
-| `FORGE_UPSTREAM_SECRET_FILE` | `legacy/forge-status.py` | `<root>/state/ui-upstream.secret` | Secret proving requests came through the UI proxy |
+| `FORGE_ROOT` | `forge/status_api.py`, UI help route | `~/.local/share/forge` for the API unless set by setup, `/app` in the UI container | Runtime root: state, configuration, credentials |
+| `FORGE_BIND_ADDRESS` | `forge/status_api.py` | none; must be `127.0.0.1` | Status API listen address. The API refuses to start otherwise |
+| `FORGE_PORT` | `forge/status_api.py` | `8787` in code; setup writes `8788` | Status API port (the UI takes 8787) |
+| `FORGE_UPSTREAM_SECRET_FILE` | `forge/status_api.py` | `<root>/state/ui-upstream.secret` | Secret proving requests came through the UI proxy |
 | `ANTHROPIC_API_KEY`, `CLAUDE_CODE_OAUTH_TOKEN`, `OPENAI_API_KEY`, `XAI_API_KEY` | harness adapters, via the credential store | unset | Coding-provider credentials (store wins; see above) |
 | `SAFE_BUILD_TIMEOUT_SECONDS` | `forge/factory/build_environment.py` | `1200` (max `2400`) | Bounded safe-build step timeout |
 

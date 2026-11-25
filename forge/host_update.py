@@ -246,7 +246,7 @@ def desired_units(root, bind):
     return {
         'forge-mirror': unit('Forge job-bound read-only Git mirrors', '/usr/bin/python3 -m forge.launch forge.mirror_daemon --root ' + unit_quote(root), python),
         'forge-registry': unit('Forge shared read-only package cache', '/usr/bin/python3 -m forge.launch forge.registry_cache --root ' + unit_quote(root), python),
-        'forge-status': unit('Forge status API (loopback)', '/usr/bin/python3 -m forge.launch --script ' + unit_quote(SOURCE / 'legacy/forge-status.py'),
+        'forge-status': unit('Forge status API (loopback)', '/usr/bin/python3 -m forge.launch forge.status_api',
                              python + ['FORGE_BIND_ADDRESS=127.0.0.1', 'FORGE_PORT=' + str(API_PORT),
                                        'FORGE_UPSTREAM_SECRET_FILE=' + str(root / UPSTREAM_SECRET)]),
         'forge-ui': unit('Forge operator UI', ' '.join(unit_quote(part) for part in ui),

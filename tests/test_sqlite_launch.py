@@ -28,7 +28,7 @@ class LauncherTests(unittest.TestCase):
         self.addCleanup(setattr, sys, 'argv', saved)
 
     def test_prepared_library_reexec_preserves_target_arguments_and_environment(self):
-        arguments = ['--script', '/source/legacy/forge-status.py', '--root', str(self.root)]
+        arguments = ['--script', '/source/script.py', '--root', str(self.root)]
         with patch('forge.store.db.qualified_sqlite', return_value=False), \
                 patch('forge.store.migration.runtime.inspect', return_value={'library_directory': '/private/runtime/lib'}), \
                 patch('forge.launch.os.execve', side_effect=Reexec) as execute, \
@@ -115,7 +115,7 @@ class HostRecordTests(unittest.TestCase):
     def test_selected_host_without_operator_config_can_render_units_and_persist_record(self):
         database = selected_store(self.root)
         units = desired_units(self.root, '127.0.0.1')
-        self.assertIn('forge.launch --script', units['forge-status'])
+        self.assertIn('ExecStart=/usr/bin/python3 -m forge.launch forge.status_api\n', units['forge-status'])
         self.assertNotIn('NITRO_FORGE_PUBLIC_ORIGIN', units['forge-ui'])
         Record(self.root).save(bind='127.0.0.1', source_revision='current')
         self.assertEqual(Record(self.root).data['source_revision'], 'current')

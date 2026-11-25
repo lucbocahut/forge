@@ -42,12 +42,10 @@ both consistently; do not delete the database to recover access. The host accoun
 is the administrative recovery boundary. The existing-server setup command
 refuses to overwrite a different identity configuration.
 
-Configured instances require operator authentication for operational reads and
-mutations. Public session metadata includes whether sign-in is enabled and the
-factory display name. Legacy unconfigured instances may retain private-network
-read access, but browser mutations require an operator session. Finish sign-in
-setup before allowing other users onto that network. Invalid selected state fails
-closed; it does not restore a JSON authority or anonymous write capability.
+Operational reads and browser mutations require an operator session. Complete
+sign-in setup before accessing the dashboard or browser onboarding. Public
+session metadata includes whether sign-in is enabled and the factory display
+name. Invalid selected state fails closed.
 
 ## Request attribution
 

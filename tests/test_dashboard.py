@@ -1,14 +1,9 @@
-import importlib.util
-from pathlib import Path
 import unittest
 from unittest.mock import Mock, patch
 import tempfile
 
+from forge import status_api as dashboard
 from tests.sqlite_fixture import selected_store
-
-spec = importlib.util.spec_from_file_location("forge_dashboard", Path(__file__).parents[1] / "legacy/forge-status.py")
-dashboard = importlib.util.module_from_spec(spec)
-spec.loader.exec_module(dashboard)
 
 OPERATOR_CSRF = 'synthetic-operator-csrf'
 OPERATOR_SESSION = 's' * 43
@@ -35,7 +30,7 @@ def signed_in(test, origin='http://127.0.0.1:8787'):
 
 
 class NoSignInTests(unittest.TestCase):
-    """Without configured operator sign-in the API offers no control at all."""
+    """Operational API access requires configured operator sign-in."""
 
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
@@ -65,18 +60,22 @@ class NoSignInTests(unittest.TestCase):
                 handler._send.assert_not_called()
                 service.assert_not_called()
 
-    def test_reads_carry_no_controls_token_without_sign_in(self):
+    def test_session_metadata_is_available_without_configured_sign_in(self):
         import json
         handler = self.handler('/api/auth/session')
         handler.do_GET()
         session = json.loads(handler._send.call_args.args[0])
         self.assertFalse(session['enabled'])
+        self.assertIsNone(session['operator'])
         self.assertNotIn('controls_token', session)
-        with patch('forge.onboarding.Onboarding') as setup:
-            setup.return_value.view.return_value = {}
-            handler = self.handler('/api/onboarding')
-            handler.do_GET()
-        self.assertIsNone(json.loads(handler._send.call_args.args[0])['controls_token'])
+
+    def test_operational_reads_require_configured_sign_in(self):
+        for path in ('/api/settings', '/api/factory', '/api/onboarding'):
+            with self.subTest(path=path):
+                handler = self.handler(path)
+                handler.do_GET()
+                handler.send_error.assert_called_once_with(401)
+                handler._send.assert_not_called()
 
 
 class HostTests(unittest.TestCase):
@@ -107,10 +106,11 @@ class HostTests(unittest.TestCase):
         handler.send_error.assert_called_once_with(403); handler._send.assert_not_called()
 
     def test_retired_legacy_endpoints_are_gone(self):
+        headers = signed_in(self)
         for path in ('/api/status', '/api/workflow', '/api/history', '/api/repository', '/api/pane'):
             handler = object.__new__(dashboard.H)
             handler.server = Mock(server_address=('127.0.0.1', 8787), read_handles=None)
-            handler.headers = {'Host': '127.0.0.1:8787'}; handler.path = path
+            handler.headers = {'Host': '127.0.0.1:8787', **headers}; handler.path = path
             handler.send_error = Mock(); handler._send = Mock()
             handler.do_GET()
             handler.send_error.assert_called_once_with(404)
