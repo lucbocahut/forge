@@ -506,9 +506,10 @@ class UpgradeHostTests(SchemaUpgradeTests):
         from types import SimpleNamespace
         from forge.store.migration.host import failure
         self.runtime(enabled=True, model='before')
+        token = 'ghp_' + 'X' * 21
         outputs = [(1, 'Updating: restart services for source bbbbbbbbbbbb\n'
                        'Error response from daemon: No such container: forge-ui-0123456789ab\n'
-                       'token ghp_abcdefghijklmnopqrstu was rejected\n'),
+                       f'token {token} was rejected\n'),
                    (0, 'Forge host is up to date at bbbbbbbbbbbb.\n')]
         def updater(argv, **kwargs):
             self.calls.append(('update',))
@@ -524,6 +525,7 @@ class UpgradeHostTests(SchemaUpgradeTests):
             self.assertEqual(error.code, 'upgrade_host_update_failed')
             self.assertIn('No such container: forge-ui-0123456789ab', error.detail)
             self.assertNotIn('ghp_', error.detail)
+            self.assertIn('token [REDACTED] was rejected', error.detail)
             receipt = self.upgrader.read()
             self.assertEqual(receipt['stage'], 'reconciling')
             self.assertEqual(receipt['updater']['returncode'], 1)

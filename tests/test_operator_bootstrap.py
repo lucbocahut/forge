@@ -240,7 +240,7 @@ class ClientTests(unittest.TestCase):
         self.assertNotIn(SECRET, instructions)
         self.args.secret_stdin = True
         with self.assertRaises(SetupError) as caught:
-            self.run_setup(stdin=io.StringIO('ghp_' + 'a' * 36))
+            self.run_setup(stdin=io.StringIO('ghp_' + 'X' * 36))
         self.assertEqual(caught.exception.code, 'invalid_identity_secret')
 
     def test_ssh_uses_stdin_strict_keys_quoted_paths_and_no_github_credentials(self):

@@ -42,11 +42,13 @@ class ActivityLinesTest(unittest.TestCase):
         self.assertEqual(tool_line('text', {}), 'Thinking it through')
 
     def test_no_secrets_raw_output_or_long_lines(self):
+        github_token = 'ghp_' + 'X' * 36
+        provider_key = 'sk-' + 'X' * 26
         risky = [
-            "curl -H 'Authorization: Bearer ghp_abcdefghijklmnopqrstuvwxyz0123456789' https://api.github.com",
-            "echo ok && grep -r sk-abcdefghijklmnopqrstuvwxyz .",
+            f"curl -H 'Authorization: Bearer {github_token}' https://api.github.com",
+            f"echo ok && grep -r {provider_key} .",
             "rg " + "x" * 500,
-            "export OPENAI_API_KEY=sk-live-secret && codex",
+            f"export OPENAI_API_KEY={provider_key} && codex",
             "mysql --password=hunter2 -e 'select 1'",
         ]
         for command in risky:

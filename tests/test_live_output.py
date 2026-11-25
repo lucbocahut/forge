@@ -19,6 +19,7 @@ from forge.store.transitions import project_unit
 
 CONTAINER = 'c' * 64
 CONFIG = {'engine': 'docker', 'engine_socket': '/run/engine.sock', 'provider_environment': ['PROVIDER_KEY']}
+INSTALLATION_TOKEN = 'ghs_' + 'X' * 20
 
 
 def beat(at):
@@ -131,7 +132,7 @@ class OutputViewTests(unittest.TestCase):
         secrets = self.root / 'state/factory/job-secrets'
         secrets.mkdir(parents=True)
         runner = ContainerRunner(CONFIG, environ={'FORGE_CREDENTIAL_ROOT': str(self.root)})
-        runner._secrets_path({'id': self.job}).write_text(json.dumps({'github_token': 'ghs_installationtoken123', 'values': ['oauth-refresh-value-123']}))
+        runner._secrets_path({'id': self.job}).write_text(json.dumps({'github_token': INSTALLATION_TOKEN, 'values': ['oauth-refresh-value-123']}))
         self.engine = Engine('', self.job)
         self.environ = {'FORGE_CREDENTIAL_ROOT': str(self.root), 'PROVIDER_KEY': 'provider-secret-value'}
 
@@ -152,14 +153,14 @@ class OutputViewTests(unittest.TestCase):
 
     def test_a_running_job_shows_its_scrubbed_live_tail(self):
         self.run_job()
-        self.engine.logs = '\n'.join([beat(150), 'token ghs_installationtoken123 provider-secret-value oauth-refresh-value-123',
+        self.engine.logs = '\n'.join([beat(150), f'token {INSTALLATION_TOKEN} provider-secret-value oauth-refresh-value-123',
                                       tool('Bash', 151, command='pnpm build'), beat(155)])
         view = self.views()
         output = view.output(self.job)
         self.assertTrue(output['live'])
         self.assertTrue(output['running'])
         self.assertIsInstance(output['at'], float)
-        for secret in ('ghs_installationtoken123', 'provider-secret-value', 'oauth-refresh-value-123'):
+        for secret in (INSTALLATION_TOKEN, 'provider-secret-value', 'oauth-refresh-value-123'):
             self.assertNotIn(secret, output['logs'])
             self.assertNotIn(secret, output['text'])
         self.assertIn('[REDACTED]', output['text'])

@@ -173,7 +173,7 @@ class SettingsTests(unittest.TestCase):
         self.assertEqual(self.settings.admission('example/project'),
                          {'allowed': False, 'reason': 'settings_unavailable'})
         for mutate in (lambda c: c.update(secret='private'),
-                       lambda c: c['connections']['build'].update(private_key_env='-----BEGIN KEY-----'),
+                       lambda c: c['connections']['build'].update(private_key_env='synthetic key content'),
                        lambda c: c['connections']['review'].update(app_id=1)):
             config = configured(); mutate(config)
             with self.assertRaises(ValueError): validate(config)

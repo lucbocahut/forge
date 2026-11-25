@@ -348,11 +348,12 @@ class TokenLoginTests(unittest.TestCase):
         self.setup = Onboarding(self.root)
 
     def test_token_connects_claude_as_a_parallel_environment_credential(self):
-        self.setup.connect('claude', token='sk-ant-oat01-synthetic-token-value')
+        token = 'synthetic-claude-token'
+        self.setup.connect('claude', token=token)
         entry = self.setup.runtime()['provider_pool'][0]
         self.assertEqual(entry['provider_environment'], ['CLAUDE_CODE_OAUTH_TOKEN'])
         self.assertIsNone(entry['provider_auth_file_env'])
-        self.assertEqual(self.setup.credentials.environment()['CLAUDE_CODE_OAUTH_TOKEN'], 'sk-ant-oat01-synthetic-token-value')
+        self.assertEqual(self.setup.credentials.environment()['CLAUDE_CODE_OAUTH_TOKEN'], token)
         view = next(h for h in self.setup.view()['harnesses'] if h['id'] == 'claude')
         self.assertEqual(view['models'][0]['auth'], 'token')
         self.assertIn('--token', view['token_login_command'])
@@ -375,7 +376,7 @@ class TokenLoginTests(unittest.TestCase):
             self.setup.connect('claude', token='short')
 
     def test_terminal_token_login_prompts_privately_and_resumes_after_busy_supervisor(self):
-        with patch('forge.host_setup.getpass.getpass', return_value='sk-ant-oat01-synthetic-token-value') as prompt, \
+        with patch('forge.host_setup.getpass.getpass', return_value='synthetic-claude-token') as prompt, \
                 patch('forge.host_setup.controller_lock', side_effect=ControllerBusy('busy')), \
                 patch('sys.stdout', new=io.StringIO()), self.assertRaisesRegex(ValueError, 'Sign-in is saved'):
             login(self.root, 'claude', token=True)
