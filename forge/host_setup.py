@@ -432,7 +432,7 @@ def main():
             print('For a remote VM, forward port 8787 over SSH to reach the loopback dashboard.')
         return 0
     except (OSError, ValueError, StateError, StoreError, subprocess.SubprocessError) as error:
-        print('Setup did not finish: ' + (str(error) if isinstance(error, (ValueError, StateError, StoreError)) else 'Host command failed; correct it and rerun setup.'), file=sys.stderr)
+        print('Setup did not finish: ' + (str(error) if isinstance(error, (ValueError, StateError, StoreError)) else 'Host command failed (' + str(error) + '); correct it and rerun setup.'), file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print('\nSetup interrupted. Saved connections are retained; rerun setup to continue.', file=sys.stderr)

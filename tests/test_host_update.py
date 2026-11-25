@@ -614,5 +614,16 @@ class SetupCommandTests(unittest.TestCase):
                 check.assert_not_called()
 
 
+class ServiceReadinessTests(unittest.TestCase):
+    def test_slow_probe_is_retried_within_the_overall_deadline(self):
+        # A large store makes one probe outlast a short per-call timeout.
+        calls = [subprocess.TimeoutExpired('probe', 5), subprocess.CompletedProcess('probe', 0)]
+        with patch.object(host_update.subprocess, 'run', side_effect=calls) as run, \
+                patch.object(host_update.time, 'sleep'):
+            host_update.wait_mirror('/root')
+        self.assertEqual(run.call_count, 2)
+        self.assertGreater(run.call_args.kwargs['timeout'], 5)
+
+
 if __name__ == '__main__':
     unittest.main()

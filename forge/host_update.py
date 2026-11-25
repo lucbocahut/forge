@@ -511,32 +511,32 @@ def qualify_boundary_engine():
                    image='sha256:' + '0' * 64).qualify()
 
 
-def wait_mirror(root, *, timeout=20):
+def wait_service(root, module, failure, *, timeout=90):
+    # Each probe opens and integrity-checks the store, which takes seconds once
+    # the database is large; give every probe the remaining time, not a fixed slice.
     deadline = time.monotonic() + timeout
     while True:
-        result = subprocess.run(['/usr/bin/python3', '-m', 'forge.launch', 'forge.mirror_daemon',
-                                 '--root', str(root), '--check'],
-                                env={**os.environ, 'PYTHONPATH': str(SOURCE)},
-                                capture_output=True, text=True, timeout=5)
-        if result.returncode == 0:
-            return
+        try:
+            result = subprocess.run(['/usr/bin/python3', '-m', 'forge.launch', module, '--root', str(root), '--check'],
+                                    env={**os.environ, 'PYTHONPATH': str(SOURCE)}, capture_output=True, text=True,
+                                    timeout=max(1, deadline - time.monotonic()))
+            if result.returncode == 0:
+                return
+        except subprocess.TimeoutExpired:
+            pass
         if time.monotonic() >= deadline:
-            raise ValueError('The job mirror service is unhealthy. Inspect forge-mirror.service and rerun the supported update.')
+            raise ValueError(failure)
         time.sleep(.25)
 
 
-def wait_registry(root, *, timeout=20):
-    deadline = time.monotonic() + timeout
-    while True:
-        result = subprocess.run(['/usr/bin/python3', '-m', 'forge.launch', 'forge.registry_cache',
-                                 '--root', str(root), '--check'],
-                                env={**os.environ, 'PYTHONPATH': str(SOURCE)},
-                                capture_output=True, text=True, timeout=5)
-        if result.returncode == 0:
-            return
-        if time.monotonic() >= deadline:
-            raise ValueError('The package cache service is unhealthy. Inspect forge-registry.service and rerun the supported update.')
-        time.sleep(.25)
+def wait_mirror(root):
+    wait_service(root, 'forge.mirror_daemon',
+                 'The job mirror service is unhealthy. Inspect forge-mirror.service and rerun the supported update.')
+
+
+def wait_registry(root):
+    wait_service(root, 'forge.registry_cache',
+                 'The package cache service is unhealthy. Inspect forge-registry.service and rerun the supported update.')
 
 
 def qualify_runner(image, seccomp, profile, *, full=False):
