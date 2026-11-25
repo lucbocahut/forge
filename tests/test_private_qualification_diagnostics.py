@@ -41,7 +41,7 @@ class PrivateQualificationDiagnosticsTests(unittest.TestCase):
 
     def test_runner_scrubs_issued_credentials_before_private_storage(self):
         opaque = 'opaque-credential-"quoted"-value'
-        fake_api_key = 'sk-' + '1234567890' * 2
+        fake_api_key = 'sk-' + 'X' * 20
         runner = ContainerRunner({**DEFAULT, 'provider_environment':['OPENAI_API_KEY']},
             environ={'FORGE_CREDENTIAL_ROOT':str(self.root), 'OPENAI_API_KEY':fake_api_key})
         secret_path = runner._secrets_path(self.job)

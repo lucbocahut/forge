@@ -21,6 +21,10 @@ from forge.store.files import StateError
 from tests.test_sqlite_identity import selected_store
 
 
+# Manifest conversion checks for this marker in GitHub's key response.
+FAKE_APP_KEY = 'synthetic fixture containing PRIVATE KEY-----'
+
+
 def control(db, name, enabled, now, details=None):
     db.execute('INSERT INTO runtime_controls(name,enabled,updated_at,details_json) VALUES(?,?,?,?) '
                'ON CONFLICT(name) DO UPDATE SET enabled=excluded.enabled,generation=generation+1,'
@@ -54,7 +58,7 @@ class SetupTests(unittest.TestCase):
         def request(method, path, token, payload=None):
             if path.startswith('/app-manifests/'):
                 self.assertIsNone(token)
-                return {'id': 1, 'slug': 'forge-build-test', 'pem': '-----BEGIN PRIVATE KEY-----\nsynthetic test data\n-----END PRIVATE KEY-----'}
+                return {'id': 1, 'slug': 'forge-build-test', 'pem': FAKE_APP_KEY}
             if path == '/app':
                 return {'id': 1, 'slug': 'forge-build-test', 'owner': {'login': 'example'}, 'permissions': ROLE_PERMISSIONS['build']}
             if path.startswith('/app/installations?'):
@@ -203,7 +207,7 @@ class SetupTests(unittest.TestCase):
             if path.startswith('/app-manifests/'):
                 return {'id': 1, 'slug': 'forge-test', 'client_id': 'Iv23liForgeClient',
                         'client_secret': 'c' * 40,
-                        'pem': '-----BEGIN PRIVATE KEY-----\nsynthetic test data\n-----END PRIVATE KEY-----'}
+                        'pem': FAKE_APP_KEY}
             if path == '/app':
                 return {'id': 1, 'slug': 'forge-test', 'owner': {'login': 'example'}, 'permissions': APP_PERMISSIONS}
             return request(method, path, token, payload)
